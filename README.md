@@ -1,20 +1,3 @@
-# threecpp-test
-
-A standalone **C++ / WebGL** spike built on [threepp](https://github.com/markaren/threepp)
-(a C++ port of three.js), compiled to WebAssembly with emscripten. It reproduces
-an esim-frontend style **Simulate** tab to show the C++ stack does exactly what a
-three.js clone does:
-
-- a grid of **1000 device chips** (each with two connection pins),
-- **click a chip** to select it and move it with a translate gizmo,
-- **two-click wiring**: click a pin, then another pin, to draw a wire; wires
-  follow chips when you move them,
-- **on-demand rendering** ("render only when something changes") — the loop
-  pauses entirely when idle, exactly like the clone's `requestRenderIfNotRequested`,
-- the **same stats.js panel** the clone uses (FPS / MS / MB, click to switch),
-- a **software-cursor red dot** that trails the OS cursor (input-to-photon lag demo),
-- a canvas that **fills the window and fullscreen** at native resolution.
-
 ## Prerequisites
 
 - [pixi](https://pixi.sh) (provides cmake, ninja, python).
