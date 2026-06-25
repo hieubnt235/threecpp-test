@@ -1,0 +1,17 @@
+[project]
+name = "threecpp-test"
+version = "0.1.0"
+description = "Standalone threepp (C++ three.js) WebGL spike: 1000-device editor, click/move/wire, on-demand render, stats.js + software-cursor."
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+# cmake + ninja drive the build; python serves the result. emscripten is NOT a
+# dependency here -- install/activate it yourself (https://emscripten.org).
+[dependencies]
+cmake = ">=3.24"
+ninja = "*"
+python = ">=3.10"
+
+[tasks]
+build = "bash scripts/build.sh"
+serve = "python scripts/serve.py"

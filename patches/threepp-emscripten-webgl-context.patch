@@ -1,0 +1,20 @@
+diff --git a/src/threepp/canvas/Canvas.cpp b/src/threepp/canvas/Canvas.cpp
+index f7f4247..2e947dd 100644
+--- a/src/threepp/canvas/Canvas.cpp
++++ b/src/threepp/canvas/Canvas.cpp
+@@ -221,7 +221,14 @@ struct Canvas::Impl {
+         glfwWindowHint(GLFW_RESIZABLE, params_.resizable_);
+         glfwWindowHint(GLFW_VISIBLE, params_.headless_ ? GLFW_FALSE : GLFW_TRUE);
+ #else
+-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);// for WebGPU
++        // emscripten's GLFW creates the WebGL context only when GLFW_CLIENT_API
++        // is non-zero (libglfw.js: useWebGL = hints[GLFW_CLIENT_API] > 0). The
++        // OpenGL renderer needs that context; WebGPU/Cross deliberately want none.
++        if (api == GraphicsAPI::OpenGL) {
++            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
++        } else {
++            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);// for WebGPU
++        }
+ #endif
+ 
+         if (params_.antialiasing_ > 0) {
