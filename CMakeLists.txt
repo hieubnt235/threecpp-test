@@ -34,13 +34,19 @@ if (NOT DEFINED EMSCRIPTEN)
             "(scripts/build.sh / `pixi run build`).")
 endif ()
 
-# WebGL link flags mirror threepp's own examples/AddExample.cmake (the OpenGL
-# branch), so the runtime is the same backend the threepp examples ship with.
+# Production WebGL link flags. The WebGL backend mirrors threepp's own
+# examples/AddExample.cmake (OpenGL branch); the rest is tuned for a shipping
+# demo build:
+#   -O3 --closure 1   full Binaryen wasm-opt + closure-compiled JS glue
+#   (no -sASSERTIONS / -sGL_DEBUG)   drop dev-only runtime checks
+#   -sENVIRONMENT=web   web only, smaller glue
 # The shell file injects the stats.js panel, the software-cursor red dot, and the
 # canvas-fill resize hook (web/shell.html).
-set(LINK_FLAGS "--bind -sUSE_GLFW=3 -sASSERTIONS -sALLOW_MEMORY_GROWTH \
--sNO_DISABLE_EXCEPTION_CATCHING -sWASM=1 -sEXPORTED_RUNTIME_METHODS=[requestFullscreen] \
--sGL_DEBUG=1 -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 \
+set(LINK_FLAGS "--bind -sUSE_GLFW=3 -sALLOW_MEMORY_GROWTH -sWASM=1 -sENVIRONMENT=web \
+-sNO_DISABLE_EXCEPTION_CATCHING -sEXPORTED_RUNTIME_METHODS=[requestFullscreen] \
+-sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2 -sFULL_ES3 \
+-O3 --closure=1 \
 --shell-file \"${CMAKE_CURRENT_SOURCE_DIR}/web/shell.html\"")
 
+# -O3 / -DNDEBUG for the C++ compile come from CMAKE_BUILD_TYPE=Release (build.sh).
 set_target_properties(spike PROPERTIES SUFFIX ".html" LINK_FLAGS "${LINK_FLAGS}")

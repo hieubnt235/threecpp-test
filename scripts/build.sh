@@ -40,9 +40,33 @@ else
     echo "threepp patch applied."
 fi
 
-# --- configure + build ------------------------------------------------------
-emcmake cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j"$(nproc)"
+# --- configure (once) + build -----------------------------------------------
+# Configure only when the build tree is missing: a no-op re-configure
+# regenerates threepp's generated sources and forces a needless relink on every
+# run. ninja still re-runs cmake automatically when CMakeLists.txt changes, so
+# incremental rebuilds stay correct -- repeat `pixi run build` is now a no-op.
+if [[ ! -f build/build.ninja ]]; then
+    emcmake cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+fi
+
+# Full parallelism (-j nproc). The -O3 compile of threepp's ~180 files is heavy;
+# if a single parallel job is killed (e.g. OOM on a smaller machine) the static
+# library archive can fail with a "missing object" error. ninja is incremental
+# and idempotent, so retry a few times -- each pass only rebuilds what is missing
+# (so memory pressure drops sharply) and the build converges.
+JOBS="$(nproc)"
+build_ok=0
+for attempt in 1 2 3; do
+    if cmake --build build -j"${JOBS}"; then
+        build_ok=1
+        break
+    fi
+    echo ">> build attempt ${attempt} failed; retrying (ninja resumes only what is missing)..." >&2
+done
+if [[ "${build_ok}" -ne 1 ]]; then
+    echo "ERROR: build failed after 3 attempts. See the log above." >&2
+    exit 1
+fi
 
 # --- stage web bundle -------------------------------------------------------
 mkdir -p dist

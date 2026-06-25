@@ -445,7 +445,8 @@ int main() {
 #ifdef __EMSCRIPTEN__
             /// Drive the SAME stats.js panel the clone uses (FPS/MS/MB, click to
             /// switch) once per render. fps is the only on-screen readout.
-            EM_ASM({ if (window.__stats) window.__stats.update(); });
+            /// Bracket notation keeps this safe under --closure 1.
+            EM_ASM({ if (window['__stats']) window['__stats']['update'](); });
 #endif
             if (renderCount == 1 || renderCount % 60 == 0) {
                 std::cout << std::format("renders: {} | {:.0f} fps | {}\n", renderCount, fps, editor.status());
